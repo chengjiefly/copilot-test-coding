@@ -36,7 +36,7 @@ public class HolidayService {
         // read csv file holiday-dummy.csv
         List<CountryHoliday> existingCountryHolidays = readCsvFile();
         // add data and distinct by countryCode and holidayDate
-        List<CountryHoliday> newCountryHolidays = new ArrayList<>();
+        List<CountryHoliday> newCountryHolidays = new ArrayList<>(existingCountryHolidays);
         for(CountryHoliday countryHoliday : addCountryHolidays) {
             if(!existingCountryHolidays.contains(countryHoliday)) {
                 newCountryHolidays.add(countryHoliday);
@@ -49,18 +49,27 @@ public class HolidayService {
     public boolean updateHolidays(List<CountryHoliday> updateCountryHolidays) {
         // read csv file holiday-dummy.csv
         List<CountryHoliday> countryHolidays = readCsvFile();
+        // updatedHoliday
+        List<CountryHoliday> updatedCountryHolidays = new ArrayList<>();
         // check if exists countryCode and holidayDate
         for(CountryHoliday updateCountryHoliday : updateCountryHolidays) {
-            if(countryHolidays.contains(updateCountryHoliday)) {
-                // update holidayName
-                countryHolidays.stream().
-                        filter(countryHoliday -> countryHoliday.getCountryCode().equals(updateCountryHoliday.getCountryCode())
-                                && countryHoliday.getHolidayDate().equals(updateCountryHoliday.getHolidayDate()))
-                        .forEach(countryHoliday -> {
-                            countryHoliday.setHolidayName(updateCountryHoliday.getHolidayName());
-                            countryHoliday.setCountryDesc(updateCountryHoliday.getCountryDesc());
-                        });
-            }
+            // update holidayName
+            countryHolidays.stream().
+                    filter(countryHoliday -> {
+                        if(countryHoliday.getCountryCode().equals(updateCountryHoliday.getCountryCode())
+                            && countryHoliday.getHolidayDate().equals(updateCountryHoliday.getHolidayDate())){
+                            updatedCountryHolidays.add(countryHoliday);
+                            return true;
+                        };
+                        return false;
+                    })
+                    .forEach(countryHoliday -> {
+                        countryHoliday.setHolidayName(updateCountryHoliday.getHolidayName());
+                        countryHoliday.setCountryDesc(updateCountryHoliday.getCountryDesc());
+                    });
+        }
+        if(updatedCountryHolidays.isEmpty()){
+            return false;
         }
         // write the filtered records back to a new CSV file or overwrite the existing one
         return write(countryHolidays);
@@ -71,7 +80,8 @@ public class HolidayService {
         List<CountryHoliday> countryHolidays = readCsvFile();
         // filter by countryCode and holidayDate
         List<CountryHoliday> filteredRecords = countryHolidays.stream()
-                .filter(countryHoliday -> !countryHoliday.getCountryCode().equals(removeHoliday.getCountryCode()) && !countryHoliday.getHolidayDate().equals(removeHoliday.getHolidayDate()))
+                .filter(countryHoliday -> !countryHoliday.getCountryCode().equals(removeHoliday.getCountryCode())
+                        || !countryHoliday.getHolidayDate().equals(removeHoliday.getHolidayDate()))
               .collect(Collectors.toList());
         // write the filtered records back to a new CSV file or overwrite the existing one
         return write(filteredRecords);
@@ -88,7 +98,9 @@ public class HolidayService {
         // 1. read csv file holiday-dummy.csv
         List<CountryHoliday> countryHolidays = readCsvFile();
         // 2. filter by countryCode and holidayDate > now() and holidayDate < now() + 1 year
-        return countryHolidays.stream().filter(countryHoliday -> countryHoliday.getCountryCode().equals(countryCode) && countryHoliday.getHolidayDate().isAfter(LocalDate.now()) && countryHoliday.getHolidayDate().isBefore(LocalDate.now().plusYears(1)))
+        return countryHolidays.stream().filter(countryHoliday -> countryHoliday.getCountryCode().equals(countryCode)
+                        && countryHoliday.getHolidayDate().isAfter(LocalDate.now())
+                        && countryHoliday.getHolidayDate().isBefore(LocalDate.now().plusYears(1)))
                 .collect(Collectors.toList());
     }
 
@@ -140,7 +152,8 @@ public class HolidayService {
              CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("Country Code", "Country Description", "Holiday Date", "Holiday Name"))) {
 
             for (CountryHoliday record : countryHolidays) {
-                csvPrinter.printRecord(record);
+                // parse record to csvRecord
+                csvPrinter.printRecord(record.getCountryCode(), record.getCountryDesc(), record.getHolidayDate(), record.getHolidayName());
             }
             return true;
         } catch (IOException e) {

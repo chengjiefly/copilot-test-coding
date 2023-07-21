@@ -1,14 +1,20 @@
 package com.test.jc53325.entity;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public class CountryHoliday {
+    @NotNull
     private String countryCode;
 
+    @NotNull
     private String countryDesc;
 
+    @NotNull
     private LocalDate holidayDate;
 
+    @NotNull
     private String holidayName;
 
     // getters and setters for countryCode, countryDesc, holidayDate, holidayName
@@ -45,12 +51,13 @@ public class CountryHoliday {
         this.holidayName = holidayName;
     }
 
-    // toString by countryCode and HolidayDate
     @Override
     public String toString() {
         return "CountryHoliday{" +
                 "countryCode='" + countryCode + '\'' +
+                ", countryDesc='" + countryDesc + '\'' +
                 ", holidayDate=" + holidayDate +
+                ", holidayName='" + holidayName + '\'' +
                 '}';
     }
 
