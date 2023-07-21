@@ -99,10 +99,11 @@ public class HolidayService {
         List<CountryHoliday> countryHolidays = readCsvFile();
         // 2. filter by countryCode and holidayDate > now() and holidayDate < now() + 1 year
         return countryHolidays.stream().filter(countryHoliday -> countryHoliday.getCountryCode().equals(countryCode)
-                        && countryHoliday.getHolidayDate().isAfter(LocalDate.now())
-                        && countryHoliday.getHolidayDate().isBefore(LocalDate.now().plusYears(1)))
+                        && countryHoliday.getHolidayDate().isAfter(LocalDate.now().plusYears(1).minusDays(1))
+                        && countryHoliday.getHolidayDate().isBefore(LocalDate.now().plusYears(2).minusDays(1)))
                 .collect(Collectors.toList());
     }
+
 
     public CountryHoliday nextHoliday(String countryCode) {
         // 1. read csv file holiday-dummy.csv
